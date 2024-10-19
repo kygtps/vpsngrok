@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   create-tmate-session:
-    runs-on: kygtps-vpsngrok-w9o9dbmi9nz
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
