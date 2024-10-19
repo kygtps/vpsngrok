@@ -1,45 +1,24 @@
-name: VPS
-on:
-  workflow_dispatch:
+name: Create tmate Session
+
+on: [push, workflow_dispatch]
 
 jobs:
-  build:
+  create-tmate-session:
     runs-on: ubuntu-latest
     steps:
-      - name: Update and Upgrade
-        run: sudo apt-get update -y && sudo apt-get upgrade -y
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Install Node.js
+      - name: Install tmate
+        run: sudo apt-get install -y tmate
+
+      - name: Start tmate session
         run: |
-          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-          sudo apt-get install -y nodejs
+          tmate -S /tmp/tmate.sock new-session -d
+          tmate -S /tmp/tmate.sock wait tmate-ready
+          echo "SSH: $(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')"
+          echo "Web: $(tmate -S /tmp/tmate.sock display -p '#{tmate_web}')"
+          tmate -S /tmp/tmate.sock display -p 'Web URL: #{tmate_web}'
 
-      - name: Install LocalTunnel
-        run: npm install -g localtunnel
-
-      - name: Run sshd
-        run: sudo service sshd start
-
-      - name: Change Password
-        run: echo -e "superpass\nsuperpass" | sudo passwd root
-
-      - name: Add User
-        run: |
-          sudo useradd -m superuser
-          echo -e "superpass\nsuperpass" | sudo passwd superuser
-          sudo usermod -aG sudo superuser
-
-      - name: Display External IP
-        run: curl ifconfig.me
-
-      - name: Start LocalTunnel
-        run: |
-          lt --port 22 > localtunnel.txt 2>&1 &
-          curl https://loca.lt/mytunnelpassword
-          sleep 5
-
-      - name: Display LocalTunnel URL
-        run: cat localtunnel.txt
-
-      - name: Run loop
-        run: tail -f /dev/null
+      - name: Keep session alive
+        run: sleep infinity
