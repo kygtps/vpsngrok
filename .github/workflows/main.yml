@@ -29,9 +29,12 @@ jobs:
           echo -e "superpass\nsuperpass" | sudo passwd superuser
           sudo usermod -aG sudo superuser
 
+      - name: Display External IP
+        run: curl ifconfig.me
+
       - name: Start LocalTunnel
         run: |
-          lt --port 22 
+          lt --port 22 > localtunnel.txt 2>&1 &
           sleep 5
 
       - name: Display LocalTunnel URL
