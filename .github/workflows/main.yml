@@ -6,29 +6,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: update and upgrade
+      - name: Update and Upgrade
         run: sudo apt-get update -y && sudo apt-get upgrade -y
+
+      - name: Install Node.js
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+
+      - name: Install LocalTunnel
+        run: npm install -g localtunnel
 
       - name: Run sshd
         run: sudo service sshd start
-        
-      - name: Change pass
-        run: yes superpass | sudo passwd
-        
-      - name: add user
+
+      - name: Change Password
+        run: echo -e "superpass\nsuperpass" | sudo passwd root
+
+      - name: Add User
         run: |
           sudo useradd -m superuser
-          yes superpass | sudo passwd superuser
+          echo -e "superpass\nsuperpass" | sudo passwd superuser
           sudo usermod -aG sudo superuser
 
-      - name: Run Serveo tunnel and save URL
+      - name: Start LocalTunnel
         run: |
-          ssh -R 0:localhost:22 serveo.net -o StrictHostKeyChecking=no -N > serveo_url.txt 2>&1 &
+          lt --port 22 
           sleep 5
-          cat serveo_url.txt | grep -o ".*serveo.net"
 
-      - name: Display Serveo URL
-        run: cat serveo_url.txt | grep -o ".*serveo.net"
-        
-      - name: run loop
+      - name: Display LocalTunnel URL
+        run: cat localtunnel.txt
+
+      - name: Run loop
         run: tail -f /dev/null
