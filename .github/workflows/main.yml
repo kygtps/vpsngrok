@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: update and upgrade
         run: sudo apt-get update -y && sudo apt-get upgrade -y
-        
+
       - name: Run sshd
         run: sudo service sshd start
         
@@ -21,12 +21,14 @@ jobs:
           yes superpass | sudo passwd superuser
           sudo usermod -aG sudo superuser
 
-      - name: Run Serveo tunnel
+      - name: Run Serveo tunnel and save URL
         run: |
-          ssh -R 80:localhost:22 serveo.net -o StrictHostKeyChecking=no -N &
-        
-      - name: Display Serveo URL
-        run: sleep 5 && curl -s http://localhost:4040/api/tunnels || echo "Serveo URL should be available on the SSH client log."
+          ssh -R 0:localhost:22 serveo.net -o StrictHostKeyChecking=no -N > serveo_url.txt 2>&1 &
+          sleep 5
+          cat serveo_url.txt | grep -o ".*serveo.net"
 
+      - name: Display Serveo URL
+        run: cat serveo_url.txt | grep -o ".*serveo.net"
+        
       - name: run loop
         run: tail -f /dev/null
